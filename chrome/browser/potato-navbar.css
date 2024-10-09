@@ -1,0 +1,607 @@
+/*== ShyFox Navbar ==================================================================================================================================
+
+Navigation bar on top of the window
+
+
+--- JUST IMPORTANT THINGS ---------------------------------------------------------------------------------------------------------------------------
+
+*/
+/* make the text input in the url clickable when the mouse cursor is hitting the top edge of the screen*/
+.urlbar-input-box {
+  position: fixed !important;
+  height: 61px !important;
+  margin-top: -20px !important;
+  width: 478px !important;
+}
+
+/*== ShyFox Variables ===============================================================================================================================
+
+This is where most of variables are located
+
+
+--- SETTINGS ----------------------------------------------------------------------------------------------------------------------------------------
+
+Values of these variables can be changed safely and most likely nothing will break.
+
+*/
+
+:root, #screenshots-component *{
+  /* accent color */
+  --shy-accent-color: #3584E4;
+  
+  /* window border thickness and size of many margins */
+  --margin: 0.8rem;
+  
+  /* rounded corners radius of most elements */
+  --rounding: 11.5px;
+  --big-rounding: 15px;
+  --bigger-rounding: 20px;
+  --giant-rounding: 30px;
+  
+  /* animations time */
+  --trans-dur: 0.25s;
+  
+  /* width of some elements. 1vw is one hundredth of the screen width */
+  --sdbr-wdt: 300px;
+  
+  --navbar-wdt: 60vw;
+  
+  --findbar-wdt: 29vw;
+  
+  /* intensity of blur (new tab) */
+  --blur-radius: 10px;
+  
+  /* brightness of inactive window elements */
+  --inactive-opct: 0.7;
+  
+  /* transparency of indicator bars showing the position of hidden panels  ***** old value 0.2*/
+  --hide-bar-opct: 0.2;
+  &:-moz-window-inactive{--hide-bar-opct: 0.2;}
+  
+  /* how much shorter these bars than panels */
+  --hide-bar-wdt-pad: 10px;
+  
+  /* size of the panel hitbox outside the window border */
+  --panel-hide-ldg: 1px;            /* f11 fullscreen   */
+  &:not([inFullscreen="true"]){
+    --panel-hide-ldg: 0px;          /* maximized window */ 
+    &[sizemode="normal"]:not([titlepreface*="‍"]){
+      --panel-hide-ldg: 20px;        /* floating window  */
+    }
+  }
+  
+  /* colors */
+  --shadow-col:  #00000020;    /* color of the translucent outline that imitates a shadow     */
+  --private-col: #6e00bc80;    /* private mode outline color                                  */
+  --debug-col: transparent;    /* rgba(0, 0, 255, 0.2); color of hidden panels hover hitboxes */
+  --debug-col-2: transparent;  /* rgba(0, 255, 0, 0.2); color of window dragging hitboxes     */
+}
+
+
+/* accent color toggle */
+:root{--shy-color: var(--shy-accent-color)}
+
+@media (-moz-bool-pref: "shyfox.fill.accent.with.icons.fill.color"){
+  :root{--shy-color: var(--toolbar-color, var(--shy-accent-color)) !important;}
+}
+
+/* 
+
+--- VARIABLES ----------------------------------------------------------------------------------------------------------------------------------
+
+Reserved values and all sorts of dynamic variables. You should not touch them.
+
+*/
+
+:root{
+  
+  --ActiveCaption: ActiveCaption;
+  
+  /* pick browser colors */                                           /* used for:          */ 
+  --bg-col: var(--lwt-accent-color, var(--ActiveCaption, tomato));    /* darker background  */       /* tomato is the fallback color */
+  --tb-col: var(--toolbar-bgcolor, tomato);                           /* lighter background */       /* meaning something went wrong */
+  --bt-col: var(--toolbarbutton-icon-fill);                           /* text or icons      */
+  --pp-col: var(--arrowpanel-background);                             /* popup color        */
+  
+  /* dynamic opacity */
+  --dyn-opct: 0.95;
+  &:-moz-window-inactive{--dyn-opct: var(--inactive-opct);}
+  
+  /* shared shortcuts for commonly used parameters */
+  --outline: 0px solid var(--arrowpanel-background);      /* outline around almost anything              */
+  --shadow: 2px solid var(--shadow-col);                  /* translucent outline that imitates a shadow  */
+  --transition: all var(--trans-dur) ease-out;            /* animation for smooth transitions            */
+  
+  /* constant variables */
+  --toolbar-item-hgt: 40px;       /* height of all panels elements: buttons, urlbar, etc.                                   */
+  --toolbar-button-wdt: 45px;     /* width of all panels buttons                                                            */
+  --hide-bar-padding: 3px;        /* how much indicator bars showing the position of hidden panels is thinner than --margin */
+  --screenshot-tool-hgt: 145px;   /* height of `ctrl + shift + s` tool buttons  */
+  
+  /* hiding the window border in fullscreen mode and assigning --margin to it in windowed mode */
+  --left-margin:   0px;
+  --right-margin:  0px;
+  --top-margin:    0px;
+  --bottom-margin: 0px; 
+  
+  &:not(:is([inFullscreen="true"], [inDOMFullscreen="true"], [titlepreface*="‍"]:is([sizemode="maximized"], [gtktiledwindow="true"]))){
+    --left-margin:   var(--margin);
+    --right-margin:  var(--margin);
+    --top-margin:    var(--margin);
+    --bottom-margin: var(--margin);
+  }
+  
+  /* hide indication bars in fullscreen or clean mode */
+  &:is([inFullscreen="true"], [inDOMFullscreen="true"], [titlepreface*="‍"]){
+    --hide-bar-opct: 0 !important;
+  }
+  
+  /* override built-in roundings with custom */
+  --arrowpanel-border-radius: var(--big-rounding) !important;
+  --panel-border-radius:      var(--big-rounding) !important;
+  
+  --arrowpanel-menuitem-border-radius: var(--rounding) !important;
+  --toolbarbutton-border-radius:       var(--rounding) !important;
+  --button-border-radius:              var(--rounding) !important;
+  --border-radius-small:               var(--rounding) !important;
+  --tab-border-radius:                 var(--rounding) !important;
+  
+  /* override one padding in navbar to match style */
+  --toolbar-start-end-padding: calc(var(--margin) / 2) !important;
+}
+
+/* current tab loading progress */
+#main-window{
+  &:has(.tabbrowser-tab[selected][busy]                        ){--shy-tab-load-pcent: 20%;}
+  &:has(.tabbrowser-tab[selected][busy][pendingicon]           ){--shy-tab-load-pcent: 50%;}
+  &:has(.tabbrowser-tab[selected][busy][pendingicon][progress] ){--shy-tab-load-pcent: 85%;}
+  &:has(.tabbrowser-tab[selected][busy][progress]              ){--shy-tab-load-pcent: 95%;}
+}
+
+/* globalise download percentages (yes, i am a clown) */
+#main-window{
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 0%;"]){--shy-download-pcent: 0%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 1%;"]){--shy-download-pcent: 1%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 2%;"]){--shy-download-pcent: 2%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 3%;"]){--shy-download-pcent: 3%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 4%;"]){--shy-download-pcent: 4%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 5%;"]){--shy-download-pcent: 5%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 6%;"]){--shy-download-pcent: 6%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 7%;"]){--shy-download-pcent: 7%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 8%;"]){--shy-download-pcent: 8%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 9%;"]){--shy-download-pcent: 9%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 10%;"]){--shy-download-pcent: 10%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 11%;"]){--shy-download-pcent: 11%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 12%;"]){--shy-download-pcent: 12%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 13%;"]){--shy-download-pcent: 13%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 14%;"]){--shy-download-pcent: 14%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 15%;"]){--shy-download-pcent: 15%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 16%;"]){--shy-download-pcent: 16%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 17%;"]){--shy-download-pcent: 17%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 18%;"]){--shy-download-pcent: 18%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 19%;"]){--shy-download-pcent: 19%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 20%;"]){--shy-download-pcent: 20%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 21%;"]){--shy-download-pcent: 21%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 22%;"]){--shy-download-pcent: 22%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 23%;"]){--shy-download-pcent: 23%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 24%;"]){--shy-download-pcent: 24%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 25%;"]){--shy-download-pcent: 25%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 26%;"]){--shy-download-pcent: 26%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 27%;"]){--shy-download-pcent: 27%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 28%;"]){--shy-download-pcent: 28%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 29%;"]){--shy-download-pcent: 29%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 30%;"]){--shy-download-pcent: 30%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 31%;"]){--shy-download-pcent: 31%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 32%;"]){--shy-download-pcent: 32%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 33%;"]){--shy-download-pcent: 33%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 34%;"]){--shy-download-pcent: 34%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 35%;"]){--shy-download-pcent: 35%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 36%;"]){--shy-download-pcent: 36%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 37%;"]){--shy-download-pcent: 37%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 38%;"]){--shy-download-pcent: 38%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 39%;"]){--shy-download-pcent: 39%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 40%;"]){--shy-download-pcent: 40%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 41%;"]){--shy-download-pcent: 41%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 42%;"]){--shy-download-pcent: 42%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 43%;"]){--shy-download-pcent: 43%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 44%;"]){--shy-download-pcent: 44%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 45%;"]){--shy-download-pcent: 45%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 46%;"]){--shy-download-pcent: 46%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 47%;"]){--shy-download-pcent: 47%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 48%;"]){--shy-download-pcent: 48%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 49%;"]){--shy-download-pcent: 49%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 50%;"]){--shy-download-pcent: 50%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 51%;"]){--shy-download-pcent: 51%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 52%;"]){--shy-download-pcent: 52%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 53%;"]){--shy-download-pcent: 53%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 54%;"]){--shy-download-pcent: 54%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 55%;"]){--shy-download-pcent: 55%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 56%;"]){--shy-download-pcent: 56%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 57%;"]){--shy-download-pcent: 57%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 58%;"]){--shy-download-pcent: 58%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 59%;"]){--shy-download-pcent: 59%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 60%;"]){--shy-download-pcent: 60%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 61%;"]){--shy-download-pcent: 61%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 62%;"]){--shy-download-pcent: 62%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 63%;"]){--shy-download-pcent: 63%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 64%;"]){--shy-download-pcent: 64%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 65%;"]){--shy-download-pcent: 65%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 66%;"]){--shy-download-pcent: 66%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 67%;"]){--shy-download-pcent: 67%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 68%;"]){--shy-download-pcent: 68%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 69%;"]){--shy-download-pcent: 69%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 70%;"]){--shy-download-pcent: 70%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 71%;"]){--shy-download-pcent: 71%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 72%;"]){--shy-download-pcent: 72%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 73%;"]){--shy-download-pcent: 73%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 74%;"]){--shy-download-pcent: 74%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 75%;"]){--shy-download-pcent: 75%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 76%;"]){--shy-download-pcent: 76%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 77%;"]){--shy-download-pcent: 77%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 78%;"]){--shy-download-pcent: 78%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 79%;"]){--shy-download-pcent: 79%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 80%;"]){--shy-download-pcent: 80%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 81%;"]){--shy-download-pcent: 81%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 82%;"]){--shy-download-pcent: 82%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 83%;"]){--shy-download-pcent: 83%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 84%;"]){--shy-download-pcent: 84%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 85%;"]){--shy-download-pcent: 85%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 86%;"]){--shy-download-pcent: 86%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 87%;"]){--shy-download-pcent: 87%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 88%;"]){--shy-download-pcent: 88%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 89%;"]){--shy-download-pcent: 89%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 90%;"]){--shy-download-pcent: 90%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 91%;"]){--shy-download-pcent: 91%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 92%;"]){--shy-download-pcent: 92%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 93%;"]){--shy-download-pcent: 93%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 94%;"]){--shy-download-pcent: 94%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 95%;"]){--shy-download-pcent: 95%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 96%;"]){--shy-download-pcent: 96%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 97%;"]){--shy-download-pcent: 97%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 98%;"]){--shy-download-pcent: 98%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 99%;"]){--shy-download-pcent: 99%;}
+  &:has(#downloads-indicator-progress-inner[style="--download-progress-pcent: 100%;"]){--shy-download-pcent: 100%;}
+}
+
+
+
+
+/* local variables */
+:root{
+  --navbar-real-wdt: var(--navbar-wdt);
+  
+    /* background transparancy for nav bar*/
+  --uc-bg-translucency: color-mix( in srgb, #000000a1, #881a1a00 10% ) !important;
+}
+
+
+
+/* SPDX-License-Identifier: MPL-2.0 */
+/* SPDX-FileCopyrightText: 2024 awwpotato */
+
+/* navbar hidden */
+:root:not([titlepreface*="​"], [inDOMFullscreen="true"]) {
+  --uc-content-margin-top: 0px !important;
+}
+
+@media not (-moz-platform: macos) {
+  :root[sizemode="fullscreen"]:not([inDOMFullscreen="true"])
+    #navigator-toolbox {
+    margin-top: 0px !important;
+  }
+}
+@media (-moz-platform: macos) {
+  #navigator-toolbox[style*="transform: translateY"] {
+    background-color: var(--uc-bg) !important;
+  }
+}
+
+#nav-bar,
+#navigator-toolbox {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#PersonalToolbar {
+  background-color: transparent !important;
+  margin-inline: var(--uc-sidebar-margin) !important;
+}
+
+#nav-bar {
+  margin-inline: var(--uc-sidebar-margin) !important;
+  --toolbarbutton-border-radius: var(--uc-button-radius) !important;
+  --urlbar-icon-border-radius: var(--uc-button-radius) !important;
+}
+
+#main-window[lwtheme="true"] .urlbar-input-container image {
+  fill: var(--toolbarbutton-icon-fill) !important;
+}
+
+/* fix margin for buttons on the sides */
+#PanelUI-menu-button {
+  padding: 0 var(--toolbarbutton-outer-padding) !important;
+}
+#nav-bar-customization-target > :is(toolbarbutton, toolbaritem):first-child,
+#nav-bar-customization-target
+  > toolbarpaletteitem:first-child
+  > :is(toolbarbutton, toolbaritem) {
+  padding-inline-start: 0px !important;
+}
+
+toolbarspring {
+  border-radius: var(--uc-button-radius);
+}
+
+#TabsToolbar {
+  display: none !important;
+}
+/* navbar hidden */
+#main-window[titlepreface*="​"]:not([inDOMFullscreen="true"]) {
+  
+  
+  
+  
+  
+  
+  
+  &:not([sizemode="fullscreen"]) {
+    @media not (-moz-bool-pref: "uc.tweak.borderless") {
+      --uc-content-margin-top: var(--uc-content-margin) !important;
+    }
+  }
+  --uc-content-margin-inline: calc(var(--uc-content-margin) * 2);
+  @media (-moz-bool-pref: "uc.tweak.borderless") {
+    --uc-content-margin-inline: 0px;
+  }
+  --nav-width: clamp(
+    min(
+      calc(
+        100vw - var(--uc-floating-margin) * 2 - var(--uc-content-margin-inline)
+      ),
+      700px
+    ),
+    75vw,
+    1000px
+  );
+  --nav-height: 38px;
+  --personal-height: 24.5px;
+  &[uidensity="compact"] {
+    --nav-height: 34.5px;
+  }
+
+  --uc-navbar-hover-margin-top: calc(
+    var(--uc-floating-margin) + var(--uc-content-margin-top)
+  );
+
+  #urlbar-container {
+    width: unset !important;
+  }
+
+  #navigator-toolbox {
+    position: absolute !important;
+    z-index: 50 !important;
+
+    width: var(--nav-width) !important;
+    height: var(--uc-hover-target-size) !important;
+    left: calc(50vw - var(--nav-width) * 0.5) !important;
+    right: auto !important;
+
+    border-radius: var(--uc-radius) !important;
+    background-color: transparent !important;
+  }
+
+  @media not (-moz-bool-pref: "uc.tweak.borderless") {
+    &:not([customizing]):not([sizemode="fullscreen"]) #navigator-toolbox {
+      &::before {
+        content: "";
+        position: absolute;
+        top: 1px !important;
+        width: 100%;
+        height: calc(var(--uc-panel-hint-size) * 30) !important;
+        background-color: transparent !important;
+         background: linear-gradient(
+      to right,
+      #2c0000 0 var(--shy-tab-load-pcent),
+      transparent var(--shy-tab-load-pcent) 100%
+    );
+        border-radius: var(--uc-radius) !important;
+        transition: opacity var(--uc-transition) var(--uc-mouseout-delay) !important;
+      }
+      
+      &::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        width: 100vw;
+        height: var(--uc-content-margin-top);
+        left: 0;
+        -moz-window-dragging: drag;
+        pointer-events: none !important;
+      }
+    }
+  }
+
+  #nav-bar {
+    min-height: unset !important;
+    max-height: unset !important;
+    height: var(--nav-height) !important;
+    margin-top: calc(
+      -1 * (var(--nav-height) + var(--personal-height) +
+            var(--uc-floating-margin) + var(--uc-content-margin))
+    );
+
+    transition: margin-top var(--uc-transition) var(--uc-mouseout-delay) !important;
+    will-change: margin-top !important;
+    border-radius: var(--uc-radius) !important;
+    
+    
+  }
+
+  #PersonalToolbar {
+    min-height: var(--personal-height) !important;
+    max-height: var(--personal-height) !important;
+    margin-top: var(--uc-floating-margin) !important;
+    border-radius: var(--uc-radius) !important;
+  }
+
+  &[customizing] {
+    & #customization-content-container {
+      margin-top: var(--nav-height) !important;
+    }
+    & #nav-bar,
+    & #PersonalToolbar {
+      background-color: var(--uc-bg) !important;
+    }
+    & #nav-bar {
+      margin-top: var(--uc-sidebar-margin) !important;
+      top: var(--uc-content-margin-top) !important;
+    }
+  }
+
+  &:not([customizing]) {
+    #toolbar-menubar {
+      /* display: none !important; */
+    }
+
+    #nav-bar,
+    #PersonalToolbar {
+      width: 100% !important;
+      background-color: transparent !important;
+      z-index: 100 !important;
+      background-color: var(--uc-bg-tran) !important;
+    }
+    #PersonalToolbar {
+      position: relative !important;
+      overflow: unset !important;
+    }
+
+    @media not (-moz-bool-pref: "uc.tweak.no-blur") {
+      #nav-bar::before,
+      #PersonalToolbar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent !important;
+        backdrop-filter: blur(var(--uc-blur-radius)) !important;
+        border-radius: var(--uc-radius) !important;
+        z-index: -1 !important;
+      }
+    }
+    #PersonalToolbar::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: calc(var(--personal-height) + var(--uc-floating-margin));
+      background: transparent !important;
+      z-index: -1 !important;
+    }
+
+    toolbarspring {
+      flex-grow: 0 !important;
+    }
+
+    
+    
+    
+      
+    /* indication bar (line on window edge) */
+    &::before{
+      content: "";
+      position: absolute;
+      transition: var(--transition);
+      
+      top: calc(
+        100% 
+        - var(--panel-hide-ldg) 
+        - var(--margin) 
+        + var(--hide-bar-padding)
+      );
+      
+      height: calc(var(--margin) - var(--hide-bar-padding) * 2);
+      width: calc(100% - var(--hide-bar-wdt-pad));
+      left: calc(var(--hide-bar-wdt-pad) / 2);
+      
+      border-radius: var(--rounding);
+      opacity: var(--hide-bar-opct);
+    }
+  }
+  
+  /* tab loading progress bar */
+  &:has(.tabbrowser-tab[selected][busy]) #nav-bar::before{
+    background: linear-gradient(
+      to right,
+      #4a0000a8 0 var(--shy-tab-load-pcent),
+      transparent var(--shy-tab-load-pcent) 100%
+    ) !important;
+  }
+  
+  /* tab loading progress on whole panel */
+  &:has(.tabbrowser-tab[selected][busy]) #nav-bar::after{
+    content: "";
+    position: absolute;
+    pointer-events: none;
+    z-index: -999;
+    width: 100%;
+    height: 100%;
+    bottom: 0px;
+    border-radius: var(--big-rounding);
+    opacity: 0;
+    background: linear-gradient(
+      to right,
+      red 0 var(--shy-tab-load-pcent),
+      transparent var(--shy-tab-load-pcent) 100%
+    );
+  }
+  
+    
+    
+    
+    
+    
+    
+    &:has(
+        #navigator-toolbox:hover,
+        #nav-bar-customization-target:hover,
+        #PanelUI-button:hover,
+        #urlbar:focus-within,
+        #urlbar[breakout][breakout-extend],
+        #nav-bar-overflow-button[open],
+        #nav-bar-overflow-button:hover,
+        #nav-bar-customization-target toolbarbutton[open="true"],
+        .urlbar-input-container > *[role="button"][open="true"],
+        #identity-box > *[role="button"][open="true"],
+        #PanelUI-menu-button[open="true"]
+      ) {
+      #nav-bar {
+        margin-top: var(--uc-navbar-hover-margin-top) !important;
+        transition: margin-top var(--uc-transition) !important;
+
+        #nav-bar-customization-target > *:not([disabled="true"]),
+        #nav-bar-overflow-button,
+        #PanelUI-button:not([disabled="true"]) {
+          opacity: 1 !important;
+        }
+        #nav-bar-customization-target > *[disabled="true"],
+        #PanelUI-button[disabled="true"] {
+          opacity: 0.5 !important;
+        }
+      }
+      #navigator-toolbox {
+        height: calc(
+          2 * var(--uc-content-margin) + var(--nav-height)
+        ) !important;
+        z-index: 99 !important;
+
+        &::before {
+          transition: opacity var(--uc-transition) !important;
+          opacity: 0 !important;
+        }
+      }
+    }
+  }
+}
