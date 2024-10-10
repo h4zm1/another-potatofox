@@ -101,11 +101,6 @@ findbar[hidden]{
 /* adaptive findbar width */
 @media (max-width: 1500px) {
    :root{
-     --findbar-wdt: calc(
-       100vw
-       - var(--left-margin)
-       - var(--right-margin)
-       - var(--margin) * 2
-     ) !important;
+     --findbar-wdt:500px!important;
   }
 }

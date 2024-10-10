@@ -11,9 +11,9 @@ Navigation bar on top of the window
   position: fixed !important;
   height: 61px !important;
   margin-top: -20px !important;
-  width: 478px !important;
+  width: 459px !important;
   /*! right: 788px; */
-  margin-left: 52px;
+  margin-left: 64px;
 }
 
 /*== ShyFox Variables ===============================================================================================================================
@@ -391,7 +391,7 @@ toolbarspring {
     border-radius: var(--uc-radius) !important;
     background-color: transparent !important;
   }
-
+/* loading indicator */
   @media not (-moz-bool-pref: "uc.tweak.borderless") {
     &:not([customizing]):not([sizemode="fullscreen"]) #navigator-toolbox {
       &::before {
@@ -399,7 +399,7 @@ toolbarspring {
         position: absolute;
         top: 1px !important;
         width: 100%;
-        height: calc(var(--uc-panel-hint-size) * 30) !important;
+        height: calc(var(--uc-panel-hint-size) * 15) !important;
         background-color: transparent !important;
          background: linear-gradient(
       to right,
