@@ -5,6 +5,8 @@
 #page-action-buttons{
   z-index: 5 !important;
   backdrop-filter: blur(1px);
+  right: 0px;
+  position: absolute;
 }
 
 

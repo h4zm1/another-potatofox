@@ -49,12 +49,6 @@ splitter.devtools-horizontal-splitter {
   border: none !important;
 }
 
-.devtools-side-splitter {
-  opacity: 0 !important;
-  min-width: var(--uc-content-margin) !important;
-  margin: 0 !important;
-  border: none !important;
-}
 
 .devtools-toolbox-bottom-iframe {
   border-radius: var(--uc-radius) !important;

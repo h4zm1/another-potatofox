@@ -12,6 +12,8 @@ Navigation bar on top of the window
   height: 61px !important;
   margin-top: -20px !important;
   width: 478px !important;
+  /*! right: 788px; */
+  margin-left: 52px;
 }
 
 /*== ShyFox Variables ===============================================================================================================================
