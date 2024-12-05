@@ -9,6 +9,19 @@
   position: absolute;
 }
 
+/* change url bar selected text color  and background color*/
+ #urlbar ::-moz-selection,
+
+.searchbar-textbox ::-moz-selection {
+  background-color: #A9D1FF !important;
+  color: #000 !important;
+} 
+
+ /* add margin to the top of the drop down url box so the first element won't be hidden behind the bookmarks */
+  .urlbarView {
+   margin-top: 33px !important;
+  }
+
 
 #identity-box[pageproxystate="valid"]:is(
     .notSecureText,

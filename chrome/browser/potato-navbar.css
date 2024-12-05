@@ -16,6 +16,15 @@ Navigation bar on top of the window
   margin-left: 64px;
 }
 
+/* download button bring it up*/
+#downloads-button {
+  z-index: 9999 !important;
+}
+
+/* bring sidebar button forward*/
+#sidebar-button {
+  z-index: 9999 !important;
+}
 /*== ShyFox Variables ===============================================================================================================================
 
 This is where most of variables are located

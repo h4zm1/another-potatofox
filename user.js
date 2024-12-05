@@ -1,23 +1,26 @@
 // userchrome.css usercontent.css activate
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 
-// Fill SVG Color
+// fill svg color
 user_pref("svg.context-properties.content.enabled", true);
 
-// CSS's `:has()` selector 
+// enable :has selector
 user_pref("layout.css.has-selector.enabled", true);
 
-// Integrated calculator at urlbar
+// integrated calculator at urlbar
 user_pref("browser.urlbar.suggest.calculator", true);
 
-// Integrated unit convertor at urlbar
+// integrated unit convertor at urlbar
 user_pref("browser.urlbar.unitConversion.enabled", true);
 
-// Trim  URL
+// trim url
 user_pref("browser.urlbar.trimHttps", true);
 user_pref("browser.urlbar.trimURLs", true);
 
-// GTK rounded corners
+// show profile management in hamburger menu
+user_pref("browser.profiles.enabled", true);
+
+// gtk rounded corners
 user_pref("widget.gtk.rounded-bottom-corners.enabled", true);
 
 // show compact mode
@@ -26,8 +29,16 @@ user_pref("browser.compactmode.show", true);
 // fix sidebar tab drag on linux
 user_pref("widget.gtk.ignore-bogus-leave-notify", 1);
 
-// option for transparent tab bg (disabled to due issues on some websites)
-// user_pref("browser.tabs.allow_transparent_browser", false);
+user_pref("browser.tabs.allow_transparent_browser", true);
 
 // uidensity -> compact
 user_pref("browser.uidensity", 1);
+
+// macos transparent
+user_pref("widget.macos.titlebar-blend-mode.behind-window", true);
+
+// don't warn on about:config open
+user_pref("browser.aboutConfig.showWarning", false);
+
+user_pref("sidebar.revamp", false);
+user_pref("sidebar.verticalTabs", false);
