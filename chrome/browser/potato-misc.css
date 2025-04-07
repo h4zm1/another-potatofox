@@ -123,7 +123,7 @@ splitter.devtools-horizontal-splitter {
     border-radius: var(--uc-radius) !important;
     background-color: var(--uc-bg-tran) !important;
     border: none !important;
-    @media not (-moz-bool-pref: "uc.tweak.no-blur") {
+    @media not -moz-pref( "uc.tweak.no-blur") {
       backdrop-filter: blur(var(--uc-blur-radius)) !important;
     }
   }

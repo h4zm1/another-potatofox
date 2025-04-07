@@ -57,13 +57,13 @@
 
 #urlbar[breakout-extend] #urlbar-background {
   background-color: Field !important;
-  @media not (-moz-bool-pref: "uc.tweak.no-blur") {
+  @media not -moz-pref( "uc.tweak.no-blur") {
     backdrop-filter: blur(var(--uc-blur-radius)) !important;
     background-color: #00000063 !important;
   }
 }
 
-@media not (-moz-bool-pref: "uc.tweak.urlbar.not-floating") {
+@media not -moz-pref( "uc.tweak.urlbar.not-floating") {
   #main-window:not([customizing]) {
     #urlbar-container {
       flex: 1;

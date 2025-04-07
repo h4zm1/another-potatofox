@@ -28,7 +28,7 @@ Styles for Min Max Close buttons
 /* navbar collapse */
 
 
-@media not (-moz-bool-pref: "uc.tweak.no-window-controls") {
+@media not -moz-pref( "uc.tweak.no-window-controls") {
   /* navbar hidden */
   :root:not([inDOMFullscreen], [titlepreface*="​"]) {
     & .titlebar-buttonbox-container {

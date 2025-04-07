@@ -6,7 +6,7 @@
 @-moz-document url-prefix("about:newtab"),
 url-prefix("about:privatebrowsing"),
 url-prefix("about:home") {
-  @media (-moz-bool-pref: "browser.tabs.allow_transparent_browser") and (-moz-bool-pref: "uc.tweak.translucency") {
+  @media -moz-pref( "browser.tabs.allow_transparent_browser") and -moz-pref( "uc.tweak.translucency") {
     body {
       background-color: color-mix(
         in srgb,
@@ -97,7 +97,7 @@ url-prefix("about:home"),
 url-prefix("about:support"),
 url-prefix("about:profiles"),
 url-prefix("about:addons") {
-  @media (-moz-bool-pref: "browser.tabs.allow_transparent_browser") and (-moz-bool-pref: "uc.tweak.translucency") {
+  @media -moz-pref( "browser.tabs.allow_transparent_browser") and -moz-pref( "uc.tweak.translucency") {
     :root {
       --in-content-page-background: transparent !important;
       --in-content-table-background: transparent !important;
@@ -116,7 +116,7 @@ color-mix(in srgb, var(--in-content-primary-button-background), transparent 80%)
 }
 
 @-moz-document url-prefix("about:config") {
-  @media (-moz-bool-pref: "browser.tabs.allow_transparent_browser") and (-moz-bool-pref: "uc.tweak.translucency") {
+  @media -moz-pref( "browser.tabs.allow_transparent_browser") and -moz-pref( "uc.tweak.translucency") {
     #about-config-search {
       backdrop-filter: blur(33px) !important;
       background-color: color-mix(
@@ -129,7 +129,7 @@ color-mix(in srgb, var(--in-content-primary-button-background), transparent 80%)
 }
 
 @-moz-document url-prefix("about:addons") {
-  @media (-moz-bool-pref: "browser.tabs.allow_transparent_browser") and (-moz-bool-pref: "uc.tweak.translucency") {
+  @media -moz-pref( "browser.tabs.allow_transparent_browser") and -moz-pref( "uc.tweak.translucency") {
     :root {
       --in-content-box-background: color-mix(
         in srgb,
@@ -145,7 +145,7 @@ color-mix(in srgb, var(--in-content-primary-button-background), transparent 80%)
 
 @-moz-document url-prefix("about:preferences"),
 url-prefix("about:support") {
-  @media (-moz-bool-pref: "browser.tabs.allow_transparent_browser") and (-moz-bool-pref: "uc.tweak.translucency") {
+  @media -moz-pref( "browser.tabs.allow_transparent_browser") and -moz-pref( "uc.tweak.translucency") {
     #searchInput {
       backdrop-filter: blur(33px) !important;
       background-color: color-mix(

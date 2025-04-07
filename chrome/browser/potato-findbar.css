@@ -8,7 +8,7 @@ Ctrl + F
 /* findbar thingy */
 .browserContainer > findbar {
   background-color: var(--uc-bg-tran) !important;
-  @media not (-moz-bool-pref: "uc.tweak.no-blur") {
+  @media not -moz-pref( "uc.tweak.no-blur") {
     backdrop-filter: blur(var(--uc-blur-radius)) !important;
   }
 }
