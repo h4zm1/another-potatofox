@@ -2,3 +2,8 @@ Continuation of the amazing da157 amazing work of potatfox https://codeberg.org/
 
 ## Screenshots
 <img src="https://i.imgur.com/WxUlObH.png" alt="potatofox theme with sidebar collapsed">
+
+## Requires
+<a href="https://addons.mozilla.org/en-US/firefox/addon/userchrome-toggle-extended/reviews/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_content=addons-manager-reviews-link">Userchrome Toggle Extended </a> with settings like this
+
+<img src="https://i.imgur.com/OgBrFUs.png" width="49%" alt="potatofox theme with sidebar collapsed">
